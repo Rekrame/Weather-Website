@@ -3,6 +3,10 @@ let lat;
 let lon;
 let lastCity;
 
+// apiKey — зберігає ключ API для доступу до даних OpenWeather
+// lat і lon — змінні для зберігання широти й довготи користувача
+// lastCity — використовується для збереження назви останнього запитаного міста
+
 function getLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
@@ -15,10 +19,20 @@ function getLocation() {
     }
 }
 
+// Перевіряє, чи браузер підтримує геолокацію.
+// Якщо так, отримує координати користувача і зберігає їх у lat і lon
+// Викликає getWeatherByCoords для завантаження погоди за координатами
+// Якщо геолокація не підтримується, виводить повідомлення про необхідність введення назви міста
+
+
 function getSelectedUnit() {
     const unitSelect = document.getElementById('unitSelect');
     return unitSelect.checked ? "imperial" : 'metric';
 }
+
+// Перевіряє елемент з ідентифікатором unitSelect і визначає одиниці вимірювання на основі стану перемикача
+
+
 
 async function getWeatherByCoords(lat, lon) {
     const unit = getSelectedUnit();
@@ -27,6 +41,12 @@ async function getWeatherByCoords(lat, lon) {
 
     await fetchData(weatherUrl, forecastUrl, unit);
 }
+
+// Завантажує погоду, використовуючи lat і lon
+// Створює URL-запити для поточної погоди (weatherUrl) та прогнозу (forecastUrl) з вибраними одиницями вимірювання
+// Викликає fetchData для отримання даних за URL
+
+
 
 async function getWeather() {
     let city = document.getElementById('cityInput').value;
@@ -38,6 +58,14 @@ async function getWeather() {
         }
     }
 
+// Запитує у користувача місто (cityInput)
+// Якщо місто не задано, перевіряє, чи є збережене lastCity, або координати. Якщо так, використовує getWeatherByCoords
+// Зберігає вибране місто як lastCity
+// Формує URL для поточної погоди та прогнозу з використанням міста
+// Викликає fetchData для отримання погодних даних
+
+
+    
     lastCity = city;
     const unit = getSelectedUnit();
     const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=${unit}`;
@@ -91,6 +119,13 @@ async function fetchData(weatherUrl, forecastUrl, unit) {
             `;
         }
 
+// Запит поточної погоди: надсилає HTTP-запит на weatherUrl. Якщо запит не вдалий, викидає помилку. У разі успішної відповіді отримує JSON-дані (weatherData), що містять деталі погоди.
+// Відображення інформації: оновлює елементи сторінки значеннями з weatherData. Зокрема, це назва міста, іконка погоди, температура, опис погоди, вологість, швидкість вітру, тиск, видимість і "відчувається як" (feels like).
+// Запит прогнозу: надсилає HTTP-запит на forecastUrl для отримання 5-денного прогнозу погоди.
+// Формування прогнозу на день: створює та оновлює елементи для відображення прогнозу на найближчі дні, відбираючи один прогноз щодоби (по одному прогнозу кожні 24 години з інтервалом у 3 години).
+
+
+        
         const nextDay = new Date();
         nextDay.setDate(nextDay.getDate() + 1);
         const nextDayString = nextDay.toISOString().split('T')[0];
@@ -119,7 +154,13 @@ async function fetchData(weatherUrl, forecastUrl, unit) {
                 `;
             });
         }
+            
+// Генерація дати на наступний день: визначає завтрашню дату (nextDayString), щоб відфільтрувати дані прогнозу для наступної доби.
+// Фільтрування годинного прогнозу: відбирає прогнози на певні години для завтрашнього дня.
+// Оновлення відображення: створює HTML-елементи для кожної години з інформацією про погоду — час, іконка погоди, температура, вологість, швидкість вітру, тиск, видимість і "відчувається як".
 
+
+    
         // Add drag-to-scroll functionality
         const scrollContainers = document.querySelectorAll('.horizontal-forecast');
         scrollContainers.forEach(container => {
@@ -149,10 +190,22 @@ async function fetchData(weatherUrl, forecastUrl, unit) {
                 container.scrollLeft = scrollLeft - walk;
             });
         });
+        
+// Ініціалізація горизонтальних контейнерів для прокрутки: вибирає всі елементи з класом .horizontal-forecast для реалізації прокрутки
+// Перемінні для контролю прокрутки: оголошує змінні для відстеження натискання, початкової позиції, і зсуву для контейнера
+// Додає події для прокрутки:
+// mousedown: активує режим прокрутки, зберігає початкову позицію та поточну прокрутку
+// mouseleave та mouseup: завершує прокрутку, скидаючи активний стан
+// mousemove: змінює положення прокрутки залежно від руху миші, створюючи плавну прокрутку на контейнері
+
+
 
     } catch (error) {
         alert(error.message);
     }
 }
 
-document.addEventListener('DOMContentLoaded', getLocation);
+// Обробка помилок: якщо відбувається помилка під час завантаження даних, відображається повідомлення з описом помилки
+// Завантаження даних при старті сторінки: при завантаженні сторінки викликає getLocation(), щоб визначити місце розташування і завантажити прогноз погоди
+
+
